@@ -1,5 +1,10 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noEmit": true,
         "module": "commonjs",
         "target": "es2020",
         "jsx": "preserve",

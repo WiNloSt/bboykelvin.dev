@@ -1,21 +1,26 @@
+import { forwardRef, useCallback, useState } from 'react'
 import { NextSeo } from 'next-seo'
 import classNames from 'classnames'
-import { forwardRef, useEffect, useRef, useState } from 'react'
+
+import { useIntersectionObserver } from '../libs/use-intersection-observer'
 
 const NAV_BAR_PADDING_PX = 60
 const INTERSECTION_OBSERVER_OFFSET = 4
 
 export default function Home() {
-  const [isFixedNavBarVisible, setIsFixedNavBarVisible] = useState(true)
+  const [isFixedNavBarVisible, setIsFixedNavBarVisible] = useState(false)
+  const handleFixedNavBarEnter = useCallback(() => {
+    setIsFixedNavBarVisible(true)
+  }, [])
+  const handleFixedNavBarExit = useCallback(() => {
+    setIsFixedNavBarVisible(false)
+  }, [])
   const fixedNavBarRef = useIntersectionObserver({
-    onExit() {
-      setIsFixedNavBarVisible(false)
-    },
-    onEnter() {
-      setIsFixedNavBarVisible(true)
-    },
-    threshold: 1,
+    onEnter: handleFixedNavBarEnter,
+    onExit: handleFixedNavBarExit,
+    margin: `${NAV_BAR_PADDING_PX * 1.5}px`,
   })
+
   const [sectionVisibilities, setSectionVisibilities] = useState({
     'about-me': false,
     skills: false,
@@ -26,29 +31,35 @@ export default function Home() {
 
   const activeSection = computeActiveSection(sectionVisibilities)
 
-  /**
-   * @param {string} sectionId
-   */
-  function handleSectionEnter(sectionId) {
-    setSectionVisibilities((sectionVisibilities) => {
-      return {
-        ...sectionVisibilities,
-        [sectionId]: true,
-      }
-    })
-  }
+  const handleSectionEnter = useCallback(
+    /**
+     * @param {string} sectionId
+     */
+    function handleSectionEnter(sectionId) {
+      setSectionVisibilities((sectionVisibilities) => {
+        return {
+          ...sectionVisibilities,
+          [sectionId]: true,
+        }
+      })
+    },
+    []
+  )
 
-  /**
-   * @param {string} sectionId
-   */
-  function handleSectionExit(sectionId) {
-    setSectionVisibilities((sectionVisibilities) => {
-      return {
-        ...sectionVisibilities,
-        [sectionId]: false,
-      }
-    })
-  }
+  const handleSectionExit = useCallback(
+    /**
+     * @param {string} sectionId
+     */
+    function handleSectionExit(sectionId) {
+      setSectionVisibilities((sectionVisibilities) => {
+        return {
+          ...sectionVisibilities,
+          [sectionId]: false,
+        }
+      })
+    },
+    []
+  )
   return (
     <>
       <NextSeo
@@ -61,7 +72,7 @@ export default function Home() {
           },
         ]}
       />
-      <NavBar activeSection={activeSection} hidden={!isFixedNavBarVisible} isSticky />
+      <NavBar activeSection={activeSection} hidden={isFixedNavBarVisible} isSticky />
       <NavBar ref={fixedNavBarRef} activeSection={activeSection} />
       <div className="">
         <Section
@@ -122,8 +133,8 @@ const NavBar = forwardRef(
           'w-full px-8 py-4 text-xl bg-white',
           className,
           isSticky && {
-            fixed: !hidden,
-            hidden: hidden,
+            'fixed transition': isSticky,
+            '-translate-y-full': hidden,
           }
         )}
       >
@@ -175,17 +186,25 @@ function NavItem({ active, children }) {
  * @param {boolean} [props.last]
  */
 function Section({ children, className, id, onEnter, onExit, last }) {
-  function handleEnter() {
-    onEnter(id)
-  }
+  const handleEnter = useCallback(
+    function handleEnter() {
+      onEnter(id)
+    },
+    [id, onEnter]
+  )
 
-  function handleExit() {
-    onExit(id)
-  }
+  const handleExit = useCallback(
+    function handleExit() {
+      onExit(id)
+    },
+    [id, onExit]
+  )
   const targetRef = useIntersectionObserver({
     onEnter: handleEnter,
     onExit: handleExit,
-    margin: !last ? `-${NAV_BAR_PADDING_PX + INTERSECTION_OBSERVER_OFFSET}px` : `${INTERSECTION_OBSERVER_OFFSET}px`,
+    margin: !last
+      ? `-${NAV_BAR_PADDING_PX + INTERSECTION_OBSERVER_OFFSET}px`
+      : `${INTERSECTION_OBSERVER_OFFSET}px`,
   })
   return (
     <div
@@ -198,48 +217,6 @@ function Section({ children, className, id, onEnter, onExit, last }) {
       <div className="grid place-items-center h-full">{children}</div>
     </div>
   )
-}
-
-/**
- *
- * @template T
- * @param {UseIntersectionObserverProps} props
- * @returns {import('react').MutableRefObject<T & HTMLElement | null>}
- */
-function useIntersectionObserver({ onExit, onEnter, margin, threshold = 0 }) {
-  const targetRef = useRef(/** @type{T & HTMLElement | null} */ (null))
-
-  useEffect(() => {
-    if (targetRef.current) {
-      const targetRefValue = targetRef.current
-      /**
-       * @type {IntersectionObserverCallback}
-       */
-      function callback(entries) {
-        entries.forEach((entry) => {
-          if (entry.intersectionRatio === threshold) {
-            onExit()
-          } else {
-            onEnter()
-          }
-        })
-      }
-
-      const config = {
-        rootMargin: margin,
-        threshold,
-      }
-
-      const observer = new IntersectionObserver(callback, config)
-      observer.observe(targetRefValue)
-
-      return () => {
-        observer.unobserve(targetRefValue)
-      }
-    }
-  }, [])
-
-  return targetRef
 }
 
 /**

@@ -2,6 +2,9 @@ import { NextSeo } from 'next-seo'
 import classNames from 'classnames'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 
+const NAV_BAR_PADDING_PX = 60
+const INTERSECTION_OBSERVER_OFFSET = 4
+
 export default function Home() {
   const [isFixedNavBarVisible, setIsFixedNavBarVisible] = useState(true)
   const fixedNavBarRef = useIntersectionObserver({
@@ -116,7 +119,7 @@ const NavBar = forwardRef(
         ref={ref}
         aria-hidden={hidden}
         className={classNames(
-          'w-full',
+          'w-full px-8 py-4 text-xl bg-white',
           className,
           isSticky && {
             fixed: !hidden,
@@ -124,7 +127,7 @@ const NavBar = forwardRef(
           }
         )}
       >
-        <ul className="bg-white flex flex-row list-none">
+        <ul className="flex flex-row list-none">
           <NavItem active={activeSection === 'about-me'}>
             <a href="#about-me">About me</a>
           </NavItem>
@@ -182,15 +185,16 @@ function Section({ children, className, id, onEnter, onExit, last }) {
   const targetRef = useIntersectionObserver({
     onEnter: handleEnter,
     onExit: handleExit,
-    margin: !last ? '-32px' : '0px',
+    margin: !last ? `-${NAV_BAR_PADDING_PX + INTERSECTION_OBSERVER_OFFSET}px` : `${INTERSECTION_OBSERVER_OFFSET}px`,
   })
   return (
     <div
-      id={id}
       className={classNames('h-[80vh]', className, { 'h-0 overflow-hidden': last })}
       ref={targetRef}
       aria-hidden={last}
     >
+      {/* anchor tag use NAV_BAR_PADDING_PX */}
+      <a id={id} className={`relative top-[-60px]`} aria-hidden></a>
       <div className="grid place-items-center h-full">{children}</div>
     </div>
   )

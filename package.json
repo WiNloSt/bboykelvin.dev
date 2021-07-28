@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next-remote-watch ./data",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -17,8 +17,11 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.3.1",
+    "esbuild": "^0.12.16",
     "eslint": "7.31.0",
     "eslint-config-next": "11.0.1",
+    "mdx-bundler": "^5.1.2",
+    "next-remote-watch": "^1.0.0",
     "postcss": "^8.3.5",
     "tailwindcss": "^2.2.4"
   }

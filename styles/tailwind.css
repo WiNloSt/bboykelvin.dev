@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+
+html {
+  @apply text-gray-800 text-base;
+  font-family: 'Quicksand', Verdana, Arial, Geneva, Tahoma, sans-serif;
+}
+
+.mdx :is(h1, h2, h3, h4, h5, h6) {
+  @apply font-semibold;
+}
+
+.mdx h1 {
+  @apply text-4xl mb-8;
+}
+
+.mdx h2 {
+  @apply text-2xl mb-6;
+}
+
+.mdx h3 {
+  @apply text-xl mb-5;
+}
+
+.mdx h4 {
+  @apply text-base mb-4;
+}
+
+.mdx h5 {
+  @apply text-sm mb-3;
+}
+
+.mdx h6 {
+  @apply text-xs mb-2;
+}
+
+.mdx p {
+  @apply my-4 leading-7 font-semibold;
+}

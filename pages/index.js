@@ -1,13 +1,34 @@
-import { forwardRef, useCallback, useState } from 'react'
+import { forwardRef, useCallback, useMemo, useState } from 'react'
 import { NextSeo } from 'next-seo'
 import classNames from 'classnames'
+import { bundleMDX } from 'mdx-bundler'
+import { getMDXComponent } from 'mdx-bundler/client'
 
 import { useIntersectionObserver } from '../libs/use-intersection-observer'
 
 const NAV_BAR_PADDING_PX = 60
 const INTERSECTION_OBSERVER_OFFSET = 4
 
-export default function Home() {
+export async function getStaticProps() {
+  const { code: aboutMeCode } = await bundleMDX('', {
+    esbuildOptions: (options) => {
+      options.entryPoints = ['../data/index/about-me.mdx']
+
+      return options
+    },
+  })
+
+  return {
+    props: {
+      aboutMeCode: aboutMeCode,
+    },
+  }
+}
+
+export default function Home({ aboutMeCode }) {
+  const AboutMe = useMemo(() => {
+    return getMDXComponent(aboutMeCode)
+  }, [aboutMeCode])
   const [isFixedNavBarVisible, setIsFixedNavBarVisible] = useState(false)
   const handleFixedNavBarEnter = useCallback(() => {
     setIsFixedNavBarVisible(true)
@@ -79,9 +100,9 @@ export default function Home() {
           onEnter={handleSectionEnter}
           onExit={handleSectionExit}
           id="about-me"
-          className="bg-red-300"
+          className="mdx max-w-2xl mx-auto"
         >
-          About me
+          <AboutMe />
         </Section>
         <Section
           onEnter={handleSectionEnter}
@@ -107,7 +128,10 @@ export default function Home() {
         >
           Contact
         </Section>
-        <Section onEnter={handleSectionEnter} onExit={handleSectionExit} id="end" last></Section>
+        {/* This made sure last-of-type selector works so I use different element than what Section renders (div) */}
+        <span aria-hidden>
+          <Section onEnter={handleSectionEnter} onExit={handleSectionExit} id="end" last></Section>
+        </span>
       </div>
     </>
   )
@@ -208,13 +232,13 @@ function Section({ children, className, id, onEnter, onExit, last }) {
   })
   return (
     <div
-      className={classNames('h-[80vh]', className, { 'h-0 overflow-hidden': last })}
+      className={classNames('my-6 last-of-type:my-0', className, { 'h-0 overflow-hidden': last })}
       ref={targetRef}
       aria-hidden={last}
     >
       {/* anchor tag use NAV_BAR_PADDING_PX */}
       <a id={id} className={`relative top-[-60px]`} aria-hidden></a>
-      <div className="grid place-items-center h-full">{children}</div>
+      <div>{children}</div>
     </div>
   )
 }

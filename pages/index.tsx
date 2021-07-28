@@ -100,9 +100,17 @@ export default function Home({ aboutMeCode }) {
           onEnter={handleSectionEnter}
           onExit={handleSectionExit}
           id="about-me"
-          className="mdx max-w-2xl mx-auto"
+          className="mdx"
         >
-          <AboutMe />
+          <NavBarBackground
+            className={classNames('bg-white transition', {
+              '-translate-y-full': isFixedNavBarVisible,
+              // '': !hidden,
+            })}
+          />
+          <div className="max-w-2xl mx-auto">
+            <AboutMe />
+          </div>
         </Section>
         <Section
           onEnter={handleSectionEnter}
@@ -110,6 +118,7 @@ export default function Home({ aboutMeCode }) {
           id="skills"
           className="bg-blue-400"
         >
+          <NavBarBackground className="bg-blue-400" />
           Skills
         </Section>
         <Section
@@ -118,6 +127,7 @@ export default function Home({ aboutMeCode }) {
           id="projects"
           className="bg-green-400"
         >
+          <NavBarBackground className="bg-green-400" />
           Projects
         </Section>
         <Section
@@ -126,6 +136,7 @@ export default function Home({ aboutMeCode }) {
           id="contact"
           className="bg-purple-400"
         >
+          <NavBarBackground className="bg-purple-400" />
           Contact
         </Section>
         {/* This made sure last-of-type selector works so I use different element than what Section renders (div) */}
@@ -153,14 +164,11 @@ const NavBar = forwardRef(
       <nav
         ref={ref}
         aria-hidden={hidden}
-        className={classNames(
-          'w-full px-8 py-4 text-xl bg-white',
-          className,
-          isSticky && {
-            'fixed transition': isSticky,
-            '-translate-y-full': hidden,
-          }
-        )}
+        className={classNames('w-full px-8 py-4 text-xl top-0 z-10', className, {
+          'fixed transition': isSticky,
+          absolute: !isSticky,
+          '-translate-y-full': hidden,
+        })}
       >
         <ul className="flex flex-row list-none">
           <NavItem active={activeSection === 'about-me'}>
@@ -232,13 +240,15 @@ function Section({ children, className, id, onEnter, onExit, last }) {
   })
   return (
     <div
-      className={classNames('my-6 last-of-type:my-0', className, { 'h-0 overflow-hidden': last })}
+      className={classNames('', className, {
+        'h-0 overflow-hidden': last,
+      })}
       ref={targetRef}
       aria-hidden={last}
     >
       {/* anchor tag use NAV_BAR_PADDING_PX */}
-      <a id={id} className={`relative top-[-60px]`} aria-hidden></a>
-      <div>{children}</div>
+      <a id={id} className={`relative`} aria-hidden></a>
+      <div className="">{children}</div>
     </div>
   )
 }
@@ -265,4 +275,19 @@ function computeActiveSection(sectionVisibilities) {
     }) || defaultSectionToAvoidTypeError
 
   return activeSection
+}
+
+type NavBarBackgroundProps = {
+  className?: string
+}
+
+function NavBarBackground({ className }: NavBarBackgroundProps) {
+  return (
+    <div
+      className={classNames('sticky top-0', className)}
+      style={{
+        height: NAV_BAR_PADDING_PX,
+      }}
+    />
+  )
 }

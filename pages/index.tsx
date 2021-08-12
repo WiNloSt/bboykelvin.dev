@@ -20,7 +20,7 @@ export async function getStaticProps() {
 
   return {
     props: {
-      aboutMeCode: aboutMeCode,
+      aboutMeCode,
     },
   }
 }
@@ -29,6 +29,7 @@ export default function Home({ aboutMeCode }) {
   const AboutMe = useMemo(() => {
     return getMDXComponent(aboutMeCode)
   }, [aboutMeCode])
+
   const [isFixedNavBarVisible, setIsFixedNavBarVisible] = useState(false)
   const handleFixedNavBarEnter = useCallback(() => {
     setIsFixedNavBarVisible(true)

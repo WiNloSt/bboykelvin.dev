@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo, useState } from 'react'
+import React, { forwardRef, useCallback, useMemo, useRef, useState } from 'react'
 import { NextSeo } from 'next-seo'
 import classNames from 'classnames'
 import { bundleMDX } from 'mdx-bundler'
@@ -53,10 +53,7 @@ export default function Home({ aboutMeCode }) {
   const activeSection = computeActiveSection(sectionVisibilities)
 
   const handleSectionEnter = useCallback(
-    /**
-     * @param {string} sectionId
-     */
-    function handleSectionEnter(sectionId) {
+    function handleSectionEnter(sectionId: string) {
       setSectionVisibilities((sectionVisibilities) => {
         return {
           ...sectionVisibilities,
@@ -68,10 +65,7 @@ export default function Home({ aboutMeCode }) {
   )
 
   const handleSectionExit = useCallback(
-    /**
-     * @param {string} sectionId
-     */
-    function handleSectionExit(sectionId) {
+    function handleSectionExit(sectionId: string) {
       setSectionVisibilities((sectionVisibilities) => {
         return {
           ...sectionVisibilities,
@@ -148,18 +142,14 @@ export default function Home({ aboutMeCode }) {
   )
 }
 
+type NavBarProps = {
+  activeSection: keyof SectionVisibility
+  isSticky?: boolean
+  hidden?: boolean
+  className?: string
+}
 const NavBar = forwardRef(
-  /**
-   *
-   * @param {object} props
-   * @param {keyof SectionVisibility} props.activeSection
-   * @param {boolean} [props.isSticky]
-   * @param {boolean} [props.hidden]
-   * @param {string} [props.className]
-   * @param {*} ref
-   * @returns
-   */
-  function NavBar({ activeSection, className, hidden, isSticky }, ref) {
+  function NavBar({ activeSection, className, hidden, isSticky }: NavBarProps, ref: any) {
     return (
       <nav
         ref={ref}
@@ -189,14 +179,11 @@ const NavBar = forwardRef(
   }
 )
 
-/**
- *
- * @param {object} props
- * @param {boolean} props.active
- * @param {import('react').ReactElement} props.children
- * @returns {import('react').ReactElement}
- */
-function NavItem({ active, children }) {
+type NavItemProps = {
+  active: boolean
+  children: React.ReactElement
+}
+function NavItem({ active, children }: NavItemProps): React.ReactElement {
   return (
     <li
       className={classNames('mr-4 last-of-type:mr-0', {
@@ -207,17 +194,16 @@ function NavItem({ active, children }) {
     </li>
   )
 }
-/**
- *
- * @param {object} props
- * @param {import('react').ReactNode} props.children
- * @param {string} props.id
- * @param {(sectionId: string) => void} props.onEnter
- * @param {Function} props.onExit
- * @param {string} [props.className]
- * @param {boolean} [props.last]
- */
-function Section({ children, className, id, onEnter, onExit, last }) {
+
+type SectionProps = {
+  id: string
+  onEnter: (sectionId: string) => void
+  onExit: Function
+  children?: React.ReactNode
+  className?: string
+  last?: boolean
+}
+function Section({ children, className, id, onEnter, onExit, last }: SectionProps) {
   const handleEnter = useCallback(
     function handleEnter() {
       onEnter(id)
@@ -231,13 +217,14 @@ function Section({ children, className, id, onEnter, onExit, last }) {
     },
     [id, onExit]
   )
-  const targetRef = useIntersectionObserver({
+  const targetRef = useIntersectionObserver<HTMLDivElement>({
     onEnter: handleEnter,
     onExit: handleExit,
     margin: !last
       ? `-${NAV_BAR_PADDING_PX + INTERSECTION_OBSERVER_OFFSET}px`
       : `${INTERSECTION_OBSERVER_OFFSET}px`,
   })
+
   return (
     <div
       className={classNames('', className, {
@@ -253,20 +240,19 @@ function Section({ children, className, id, onEnter, onExit, last }) {
   )
 }
 
-/**
- * @typedef {{ 'about-me': boolean; skills: boolean; projects: boolean; contact: boolean; end: boolean; }} SectionVisibility
- *
- * @param {SectionVisibility} sectionVisibilities
- * @returns {keyof SectionVisibility}
- */
-function computeActiveSection(sectionVisibilities) {
+type SectionVisibility = {
+  'about-me': boolean
+  'skills': boolean
+  'projects': boolean
+  'contact': boolean
+  'end': boolean
+}
+
+function computeActiveSection(sectionVisibilities: SectionVisibility): keyof SectionVisibility {
   if (sectionVisibilities.end) {
     return 'contact'
   }
-  /**
-   * @type {Array<keyof SectionVisibility>}
-   */
-  const SECTION_ORDER = ['about-me', 'skills', 'projects', 'contact', 'end']
+  const SECTION_ORDER: Array<keyof SectionVisibility> = ['about-me', 'skills', 'projects', 'contact', 'end']
 
   const defaultSectionToAvoidTypeError = SECTION_ORDER[0]
   const activeSection =
